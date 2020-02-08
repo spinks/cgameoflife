@@ -1,6 +1,8 @@
 #include "gol.h"
 
 void read_in_file(FILE *infile, struct universe *u) {
+  u->alive_cumulative = 0;
+  u->total_cumulative = 0;
   int lines = 0;
   int first_line_length = 0;
   int first_line_finished = 0;

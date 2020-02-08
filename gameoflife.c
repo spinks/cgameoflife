@@ -64,7 +64,7 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  struct universe v = {.alive_cumulative = 0, .total_cumulative = 0};
+  struct universe v;
 
   read_in_file(infile, &v);
   if (errno) {

@@ -3,24 +3,31 @@
 void read_in_file(FILE *infile, struct universe *u) {
   u->alive_cumulative = 0;
   u->total_cumulative = 0;
+
   int lines = 0;
+  int line_content = 0;
   int first_line_length = 0;
   int first_line_finished = 0;
 
   char ch;
   while (fscanf(infile, "%c", &ch) != EOF) {
     if (ch != '\n' && ch != '.' && ch != '*') {
-      fprintf(stderr, "Invalid characters found in input.\n");
+      fprintf(stderr, "Invalid characters found in input: %c\n", ch);
       errno = EINVAL;
+      fclose(infile);
       return;
     }
+
     if (ch == '\n') {
-      lines++;
+      if (line_content == 1) line_content = 0;
       first_line_finished = 1;
+    } else {
+      if (line_content == 0) {
+        line_content = 1;
+        lines++;
+      }
     }
-    if (first_line_finished == 0) {
-      first_line_length++;
-    }
+    if (first_line_finished == 0) first_line_length++;
   }
 
   u->arr = malloc(lines * sizeof(*u->arr));
@@ -36,6 +43,7 @@ void read_in_file(FILE *infile, struct universe *u) {
       if (col != first_line_length) {
         fprintf(stderr, "Line lengths not consistent.\n");
         errno = EINVAL;
+        fclose(infile);
         return;
       }
       row++;
@@ -59,6 +67,7 @@ void write_out_file(FILE *outfile, struct universe *u) {
     }
     fputs("\n", outfile);
   }
+  fclose(outfile);
 }
 
 int is_alive(struct universe *u, int column, int row) {
@@ -93,9 +102,7 @@ int will_be_alive(struct universe *u, int column, int row) {
       }
     }
   }
-  if (neighbors == 3) {
-    return 1;
-  } else if (neighbors == 2 && u->arr[row][column] == 1) {
+  if ((neighbors == 3) || (neighbors == 2 && u->arr[row][column] == 1)) {
     return 1;
   } else {
     return 0;
@@ -123,9 +130,7 @@ int will_be_alive_torus(struct universe *u, int column, int row) {
       }
     }
   }
-  if (neighbors == 3) {
-    return 1;
-  } else if (neighbors == 2 && u->arr[row][column] == 1) {
+  if ((neighbors == 3) || (neighbors == 2 && u->arr[row][column] == 1)) {
     return 1;
   } else {
     return 0;

@@ -1,4 +1,8 @@
+#include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "gol.h"
 
 int main(int argc, char* argv[]) {
@@ -12,16 +16,42 @@ int main(int argc, char* argv[]) {
     if (argv[i][0] == '-') {
       switch (argv[i][1]) {
         default:
-          printf("Unknown option -%c\n\n", argv[i][1]);
+          fprintf(stderr, "Unknown option -%c\n\n", argv[i][1]);
           break;
         case 'i':
+          if (i + 1 == argc) {
+            fprintf(stderr, "No infile passed (-i)\n");
+            return 1;
+          };
           infile = fopen(argv[i + 1], "r");
+          if (errno) {
+            fprintf(stderr, "Error reading infile (-i): %s\n", strerror(errno));
+            return 1;
+          };
           break;
         case 'o':
+          if (i + 1 == argc) {
+            fprintf(stderr, "No outfile passed (-o)\n");
+            return 1;
+          };
           outfile = fopen(argv[i + 1], "w");
+          if (errno) {
+            fprintf(stderr, "Error opening outfile (-o): %s\n",
+                    strerror(errno));
+            return 1;
+          };
           break;
         case 'g':
-          generations = atoi(argv[i + 1]);
+          if (i + 1 == argc) {
+            fprintf(stderr, "No generations number passed (-g)\n");
+            return 1;
+          };
+          generations = strtol(argv[i + 1], NULL, 10);
+          if (errno) {
+            fprintf(stderr, "Invalid generations number (-g): %s\n",
+                    strerror(errno));
+            return 1;
+          };
           break;
         case 's':
           statistics = 1;

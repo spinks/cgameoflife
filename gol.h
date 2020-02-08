@@ -1,6 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
 struct universe {
   /*Put some appropriate things here*/
+  int rows;
+  int cols;
+  int **arr;
+  long alive_cumulative;
+  long total_cumulative;
 };
 
 /*Do not modify the next seven lines*/

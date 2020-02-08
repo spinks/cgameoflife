@@ -1,13 +1,17 @@
 #include "gol.h"
 
 void read_in_file(FILE *infile, struct universe *u) {
-  // free(u->Arr);
   int lines = 0;
   int first_line_length = 0;
   int first_line_finished = 0;
 
-  while (!feof(infile)) {
-    char ch = fgetc(infile);
+  char ch;
+  while (fscanf(infile, "%c", &ch) != EOF) {
+    if (ch != '\n' && ch != '.' && ch != '*') {
+      fprintf(stderr, "Invalid characters found in input.\n");
+      errno = EINVAL;
+      return;
+    }
     if (ch == '\n') {
       lines++;
       first_line_finished = 1;
@@ -25,25 +29,20 @@ void read_in_file(FILE *infile, struct universe *u) {
   fseek(infile, 0L, SEEK_SET);
   int row = 0;
   int col = 0;
-  while (!feof(infile)) {
-    char ch = fgetc(infile);
+  while (fscanf(infile, "%c", &ch) != EOF) {
     if (ch == '\n') {
+      if (col != first_line_length) {
+        fprintf(stderr, "Line lengths not consistent.\n");
+        errno = EINVAL;
+        return;
+      }
       row++;
       col = 0;
     } else {
-      if (row < lines && col < first_line_length) {
-        u->arr[row][col] = (ch == '.') ? 0 : 1;
-      }
+      u->arr[row][col] = (ch == '.') ? 0 : 1;
       col++;
     }
   }
-
-  // for (int i = 0; i < lines; i++) {
-  //   for (int j = 0; j < first_line_length; j++) {
-  //     printf("%d", u->arr[i][j]);
-  //   }
-  //   printf("\n");
-  // }
 
   u->rows = lines;
   u->cols = first_line_length;
@@ -63,9 +62,11 @@ void write_out_file(FILE *outfile, struct universe *u) {
 int is_alive(struct universe *u, int column, int row) {
   if (column < 0 || column >= u->cols) {
     fprintf(stderr, "%s", "Invalid column index\n");
+    return -1;
   }
   if (row < 0 || row >= u->rows) {
     fprintf(stderr, "%s", "Invalid row index\n");
+    return -1;
   }
   return u->arr[row][column];
 }
@@ -73,9 +74,11 @@ int is_alive(struct universe *u, int column, int row) {
 int will_be_alive(struct universe *u, int column, int row) {
   if (column < 0 || column >= u->cols) {
     fprintf(stderr, "%s", "Invalid column index\n");
+    return -1;
   }
   if (row < 0 || row >= u->rows) {
     fprintf(stderr, "%s", "Invalid row index\n");
+    return -1;
   }
   int neighbors = 0;
   for (int x_off = -1; x_off != 2; x_off++) {
@@ -100,9 +103,11 @@ int will_be_alive(struct universe *u, int column, int row) {
 int will_be_alive_torus(struct universe *u, int column, int row) {
   if (column < 0 || column >= u->cols) {
     fprintf(stderr, "%s", "Invalid column index\n");
+    return -1;
   }
   if (row < 0 || row >= u->rows) {
     fprintf(stderr, "%s", "Invalid row index\n");
+    return -1;
   }
   int neighbors = 0;
   for (int x_off = -1; x_off != 2; x_off++) {

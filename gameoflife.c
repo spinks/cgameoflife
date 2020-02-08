@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "gol.h"
 
@@ -66,6 +67,9 @@ int main(int argc, char* argv[]) {
   struct universe v = {.alive_cumulative = 0, .total_cumulative = 0};
 
   read_in_file(infile, &v);
+  if (errno) {
+    return 1;
+  };
   for (int i = 0; i != generations; i++) {
     if (statistics == 1) {
       print_statistics(&v);

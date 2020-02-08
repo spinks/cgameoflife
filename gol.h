@@ -1,5 +1,7 @@
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 struct universe {
   /*Put some appropriate things here*/
   int rows;

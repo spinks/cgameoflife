@@ -4,57 +4,65 @@ void read_in_file(FILE *infile, struct universe *u) {
   u->alive_cumulative = 0;
   u->total_cumulative = 0;
 
-  int lines = 0;
-  int line_content = 0;
+  u->arr = malloc(sizeof(u->arr[0]));
+  u->arr[0] = malloc(sizeof(u->arr[0][0]));
+
   int first_line_length = 0;
   int first_line_finished = 0;
+  int row = 0;
+  int max_row = 0;
+  int col = 0;
+  int max_col = 0;
 
   char ch;
   while (fscanf(infile, "%c", &ch) != EOF) {
-    if (ch != '\n' && ch != '.' && ch != '*') {
-      fprintf(stderr, "Invalid characters found in input: %c\n", ch);
-      errno = EINVAL;
-      fclose(infile);
-      return;
-    }
+    if (row == max_row) {
+      int new_row = (max_row + 1) * 2;
+      int **new_arr = realloc(u->arr, new_row * sizeof(*u->arr));
 
-    if (ch == '\n') {
-      if (line_content == 1) line_content = 0;
-      first_line_finished = 1;
-    } else {
-      if (line_content == 0) {
-        line_content = 1;
-        lines++;
+      if (new_arr == NULL) {
+        // free memory and exit (need to free)
+        exit(1);
       }
+      for (int i = row; i != new_row; i++) {
+        new_arr[i] = malloc(sizeof(u->arr[0][0]));
+      }
+      max_row = new_row;
+      u->arr = new_arr;
     }
-    if (first_line_finished == 0) first_line_length++;
-  }
-
-  u->arr = malloc(lines * sizeof(*u->arr));
-  for (int i = 0; i < lines; i++) {
-    u->arr[i] = malloc(first_line_length * sizeof(u->arr[0]));
-  }
-
-  fseek(infile, 0L, SEEK_SET);
-  int row = 0;
-  int col = 0;
-  while (fscanf(infile, "%c", &ch) != EOF) {
-    if (ch == '\n') {
+    if (col == max_col) {
+      int new_col = (max_col + 1) * 2;
+      int *new_line = realloc(u->arr[row], new_col * sizeof(*u->arr[row]));
+      if (new_line == NULL) {
+        // free memory and exit (need to free)
+        exit(1);
+      }
+      max_col = new_col;
+      u->arr[row] = new_line;
+    }
+    if (ch == '.' || ch == '*') {
+      if (first_line_finished == 0) first_line_length++;
+      u->arr[row][col] = (ch == '.') ? 0 : 1;
+      col++;
+    } else if (ch == '\n') {
+      if (first_line_finished == 0) first_line_finished = 1;
       if (col != first_line_length) {
         fprintf(stderr, "Line lengths not consistent.\n");
         errno = EINVAL;
         fclose(infile);
         return;
       }
-      row++;
       col = 0;
+      max_col = 0;
+      row++;
     } else {
-      u->arr[row][col] = (ch == '.') ? 0 : 1;
-      col++;
+      fprintf(stderr, "Invalid characters found in input: %c\n", ch);
+      errno = EINVAL;
+      fclose(infile);
+      return;
     }
   }
-
-  u->rows = lines;
+  u->rows = row;
   u->cols = first_line_length;
   fclose(infile);
 }
@@ -65,7 +73,7 @@ void write_out_file(FILE *outfile, struct universe *u) {
       char c = u->arr[x][y] ? '*' : '.';
       fputc(c, outfile);
     }
-    fputs("\n", outfile);
+    fputc('\n', outfile);
   }
   fclose(outfile);
 }

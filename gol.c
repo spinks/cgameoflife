@@ -6,6 +6,11 @@ void read_in_file(FILE *infile, struct universe *u) {
 
   u->arr = malloc(sizeof(u->arr[0]));
   u->arr[0] = malloc(sizeof(u->arr[0][0]));
+  if (u->arr == NULL || u->arr[0] == NULL) {
+    fprintf(stderr, "Unable to allocate memory.\n");
+    errno = ENOMEM;
+    return;
+  }
 
   int first_line_length = 0;
   int first_line_finished = 0;
@@ -21,11 +26,17 @@ void read_in_file(FILE *infile, struct universe *u) {
       int **new_arr = realloc(u->arr, new_row * sizeof(*u->arr));
 
       if (new_arr == NULL) {
-        // free memory and exit (need to free)
-        exit(1);
+        fprintf(stderr, "Unable to allocate memory.\n");
+        errno = ENOMEM;
+        return;
       }
       for (int i = row; i != new_row; i++) {
         new_arr[i] = malloc(sizeof(u->arr[0][0]));
+        if (new_arr[i] == NULL) {
+          fprintf(stderr, "Unable to allocate memory.\n");
+          errno = ENOMEM;
+          return;
+        }
       }
       max_row = new_row;
       u->arr = new_arr;
@@ -34,8 +45,9 @@ void read_in_file(FILE *infile, struct universe *u) {
       int new_col = (max_col + 1) * 2;
       int *new_line = realloc(u->arr[row], new_col * sizeof(*u->arr[row]));
       if (new_line == NULL) {
-        // free memory and exit (need to free)
-        exit(1);
+        fprintf(stderr, "Unable to allocate memory.\n");
+        errno = ENOMEM;
+        return;
       }
       max_col = new_col;
       u->arr[row] = new_line;

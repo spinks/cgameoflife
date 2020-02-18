@@ -54,6 +54,12 @@ void read_in_file(FILE *infile, struct universe *u) {
     }
     if (ch == '.' || ch == '*') {
       if (first_line_finished == 0) first_line_length++;
+      if (first_line_length > 512) {
+        fprintf(stderr, "Line length is over permited 512 columns.\n");
+        errno = EINVAL;
+        fclose(infile);
+        return;
+      }
       u->arr[row][col] = (ch == '.') ? 0 : 1;
       col++;
     } else if (ch == '\n') {
@@ -87,7 +93,6 @@ void write_out_file(FILE *outfile, struct universe *u) {
     }
     fputc('\n', outfile);
   }
-  fclose(outfile);
 }
 
 int is_alive(struct universe *u, int column, int row) {

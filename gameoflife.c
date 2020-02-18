@@ -8,8 +8,14 @@
 
 int main(int argc, char* argv[]) {
   FILE* infile = stdin;
+  int inFlag = 0;
+
   FILE* outfile = stdout;
+  int outFlag = 0;
+
   int generations = 5;
+  int genFlag = 0;
+
   int statistics = 0;
   int torus = 0;
 
@@ -18,8 +24,13 @@ int main(int argc, char* argv[]) {
       switch (argv[i][1]) {
         default:
           fprintf(stderr, "Unknown option -%c\n\n", argv[i][1]);
+          return 1;
           break;
         case 'i':
+          if (inFlag) {
+            fprintf(stderr, "Multiple infile arguments passed\n");
+            return 1;
+          }
           if (i + 1 == argc) {
             fprintf(stderr, "No infile passed (-i)\n");
             return 1;
@@ -28,9 +39,14 @@ int main(int argc, char* argv[]) {
           if (errno) {
             fprintf(stderr, "Error reading infile (-i): %s\n", strerror(errno));
             return 1;
-          };
+          }
+          inFlag = 1;
           break;
         case 'o':
+          if (outFlag) {
+            fprintf(stderr, "Multiple outfile arguments passed\n");
+            return 1;
+          }
           if (i + 1 == argc) {
             fprintf(stderr, "No outfile passed (-o)\n");
             return 1;
@@ -41,8 +57,13 @@ int main(int argc, char* argv[]) {
                     strerror(errno));
             return 1;
           };
+          outFlag = 1;
           break;
         case 'g':
+          if (genFlag) {
+            fprintf(stderr, "Multiple generation arguments passed\n");
+            return 1;
+          }
           if (i + 1 == argc) {
             fprintf(stderr, "No generations number passed (-g)\n");
             return 1;
@@ -53,6 +74,12 @@ int main(int argc, char* argv[]) {
                     strerror(errno));
             return 1;
           };
+          if (generations < 0) {
+            fprintf(stderr,
+                    "Invalid generations number (must be positive) (-g)\n");
+            return 1;
+          }
+          genFlag = 1;
           break;
         case 's':
           statistics = 1;
@@ -81,5 +108,6 @@ int main(int argc, char* argv[]) {
     }
   }
   write_out_file(outfile, &v);
+  fclose(outfile);
   return 0;
 }

@@ -82,6 +82,13 @@ void read_in_file(FILE *infile, struct universe *u) {
   }
   u->rows = row;
   u->cols = first_line_length;
+
+  for (int x = 0; x != u->rows; x++) {
+    for (int y = 0; y != u->cols; y++) {
+      u->alive_cumulative += u->arr[x][y];
+      u->total_cumulative++;
+    }
+  }
   fclose(infile);
 }
 
@@ -146,10 +153,8 @@ int will_be_alive_torus(struct universe *u, int column, int row) {
   int neighbors = 0;
   for (int x_off = -1; x_off != 2; x_off++) {
     for (int y_off = -1; y_off != 2; y_off++) {
-      int nXr = (row + x_off) % u->rows;
-      int nX = nXr < 0 ? nXr + u->rows : nXr;
-      int nYr = (column + y_off) % u->cols;
-      int nY = nYr < 0 ? nYr + u->rows : nYr;
+      int nX = (row + x_off + u->rows) % u->rows;
+      int nY = (column + y_off + u->cols) % u->cols;
       if (!(x_off == 0 && y_off == 0)) {
         neighbors += is_alive(u, nY, nX);
       }

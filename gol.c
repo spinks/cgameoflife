@@ -177,6 +177,7 @@ void evolve(struct universe *u,
     for (int y = 0; y != u->cols; y++) {
       u->arr[x][y] = new[x][y];
     }
+    free(new[x]);
   }
   free(new);
 }

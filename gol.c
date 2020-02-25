@@ -168,11 +168,17 @@ void evolve(struct universe *u,
   for (int i = 0; i < u->rows; i++) {
     new[i] = malloc(u->cols * sizeof(new[0]));
   }
+  int alive_round = 0;
+  int total_round = 0;
   for (int x = 0; x != u->rows; x++) {
     for (int y = 0; y != u->cols; y++) {
       new[x][y] = rule(u, y, x);
+      alive_round += new[x][y];
+      total_round++;
     }
   }
+  u->alive_cumulative += alive_round;
+  u->total_cumulative += total_round;
   for (int x = 0; x != u->rows; x++) {
     for (int y = 0; y != u->cols; y++) {
       u->arr[x][y] = new[x][y];
@@ -191,11 +197,10 @@ void print_statistics(struct universe *u) {
       total_round++;
     }
   }
-  u->alive_cumulative += alive_round;
-  u->total_cumulative += total_round;
 
-  float percent_round = alive_round / (float)(total_round);
-  float percent_cumulative = u->alive_cumulative / (float)(u->total_cumulative);
+  float percent_round = 100 * alive_round / (float)(total_round);
+  float percent_cumulative =
+      100 * u->alive_cumulative / (float)(u->total_cumulative);
 
   printf("%.3f%% of cells currently alive\n", percent_round);
   printf("%.3f%% of cells alive on average\n", percent_cumulative);

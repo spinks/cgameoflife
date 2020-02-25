@@ -98,9 +98,6 @@ int main(int argc, char* argv[]) {
     return 1;
   };
   for (int i = 0; i != generations; i++) {
-    if (statistics == 1) {
-      print_statistics(&v);
-    }
     if (torus == 1) {
       evolve(&v, will_be_alive_torus);
     } else {
@@ -108,6 +105,9 @@ int main(int argc, char* argv[]) {
     }
   }
   write_out_file(outfile, &v);
+  if (statistics == 1) {
+    print_statistics(&v);
+  }
   fclose(outfile);
   return 0;
 }

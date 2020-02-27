@@ -64,6 +64,12 @@ void read_in_file(FILE *infile, struct universe *u) {
       col++;
     } else if (ch == '\n') {
       if (first_line_finished == 0) first_line_finished = 1;
+      if (first_line_length == 0) {
+        fprintf(stderr, "Input file is empty\n");
+        errno = EINVAL;
+        fclose(infile);
+        return;
+      }
       if (col != first_line_length) {
         fprintf(stderr, "Line lengths not consistent.\n");
         errno = EINVAL;

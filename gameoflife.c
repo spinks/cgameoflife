@@ -1,5 +1,4 @@
 #include <errno.h>
-#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,11 +8,11 @@
 
 int main(int argc, char* argv[]) {
   FILE* inFile = stdin;
-  char inFileName[PATH_MAX] = "";
+  char* inFileName;
   int inFlag = 0;
 
   FILE* outFile = stdout;
-  char outFileName[PATH_MAX] = "";
+  char* outFileName;
   int outFlag = 0;
 
   int generations = 5;
@@ -41,13 +40,16 @@ int main(int argc, char* argv[]) {
             }
             continue;
           }
-          strcpy(inFileName, argv[i + 1]);
+          inFileName = argv[i + 1];
           inFile = fopen(inFileName, "r");
           if (errno) {
-            fprintf(stderr, "Error reading infile (-i): %s\n", strerror(errno));
+            fprintf(stderr, "Error reading infile (-i): %s %s\n", inFileName,
+                    strerror(errno));
             return 1;
           }
           inFlag = 1;
+          // Increment past read file
+          i++;
           break;
         case 'o':
           if (i + 1 == argc) {
@@ -62,7 +64,7 @@ int main(int argc, char* argv[]) {
             }
             continue;
           }
-          strcpy(outFileName, argv[i + 1]);
+          outFileName = argv[i + 1];
           outFile = fopen(outFileName, "w");
           if (errno) {
             fprintf(stderr, "Error opening outfile (-o): %s\n",
@@ -70,6 +72,8 @@ int main(int argc, char* argv[]) {
             return 1;
           };
           outFlag = 1;
+          // Increment past opened outfile
+          i++;
           break;
         case 'g':
           if (genFlag) {

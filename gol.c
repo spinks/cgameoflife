@@ -132,10 +132,12 @@ int will_be_alive(struct universe *u, int column, int row) {
   int neighbors = 0;
   for (int x_off = -1; x_off != 2; x_off++) {
     for (int y_off = -1; y_off != 2; y_off++) {
-      int nX = row + x_off;
-      int nY = column + y_off;
+      long nX = (long)row + (long)x_off;
+      long nY = (long)column + (long)y_off;
       if (!(nX < 0 || nX >= u->rows || nY < 0 || nY >= u->cols) &&
           !(x_off == 0 && y_off == 0)) {
+        // the long indexes are automatically casted back to ints
+        // this is safe as they would have to be within the bounds
         neighbors += is_alive(u, nY, nX);
       }
     }
@@ -159,9 +161,11 @@ int will_be_alive_torus(struct universe *u, int column, int row) {
   int neighbors = 0;
   for (int x_off = -1; x_off != 2; x_off++) {
     for (int y_off = -1; y_off != 2; y_off++) {
-      int nX = (row + x_off + u->rows) % u->rows;
-      int nY = (column + y_off + u->cols) % u->cols;
+      long nX = ((long)row + (long)x_off + (long)u->rows) % (long)u->rows;
+      long nY = ((long)column + (long)y_off + (long)u->cols) % (long)u->cols;
       if (!(x_off == 0 && y_off == 0)) {
+        // the long indexes are automatically casted back to ints
+        // this is safe as they would have to be within the bounds
         neighbors += is_alive(u, nY, nX);
       }
     }

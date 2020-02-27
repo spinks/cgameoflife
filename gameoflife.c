@@ -1,4 +1,5 @@
 #include <errno.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,10 +8,12 @@
 #include "gol.h"
 
 int main(int argc, char* argv[]) {
-  FILE* infile = stdin;
+  FILE* inFile = stdin;
+  char inFileName[PATH_MAX] = "";
   int inFlag = 0;
 
-  FILE* outfile = stdout;
+  FILE* outFile = stdout;
+  char outFileName[PATH_MAX] = "";
   int outFlag = 0;
 
   int generations = 5;
@@ -27,15 +30,19 @@ int main(int argc, char* argv[]) {
           return 1;
           break;
         case 'i':
-          if (inFlag) {
-            fprintf(stderr, "Multiple infile arguments passed\n");
-            return 1;
-          }
           if (i + 1 == argc) {
             fprintf(stderr, "No infile passed (-i)\n");
             return 1;
           };
-          infile = fopen(argv[i + 1], "r");
+          if (inFlag) {
+            if (strcmp(inFileName, argv[i + 1])) {
+              fprintf(stderr, "Multiple conflicting infile arguments passed\n");
+              return 1;
+            }
+            continue;
+          }
+          strcpy(inFileName, argv[i + 1]);
+          inFile = fopen(inFileName, "r");
           if (errno) {
             fprintf(stderr, "Error reading infile (-i): %s\n", strerror(errno));
             return 1;
@@ -43,15 +50,20 @@ int main(int argc, char* argv[]) {
           inFlag = 1;
           break;
         case 'o':
-          if (outFlag) {
-            fprintf(stderr, "Multiple outfile arguments passed\n");
-            return 1;
-          }
           if (i + 1 == argc) {
             fprintf(stderr, "No outfile passed (-o)\n");
             return 1;
           };
-          outfile = fopen(argv[i + 1], "w");
+          if (outFlag) {
+            if (strcmp(outFileName, argv[i + 1])) {
+              fprintf(stderr,
+                      "Multiple conflicting outfile arguments passed\n");
+              return 1;
+            }
+            continue;
+          }
+          strcpy(outFileName, argv[i + 1]);
+          outFile = fopen(outFileName, "w");
           if (errno) {
             fprintf(stderr, "Error opening outfile (-o): %s\n",
                     strerror(errno));
@@ -61,8 +73,18 @@ int main(int argc, char* argv[]) {
           break;
         case 'g':
           if (genFlag) {
-            fprintf(stderr, "Multiple generation arguments passed\n");
-            return 1;
+            int generationsNew = strtol(argv[i + 1], NULL, 10);
+            if (errno) {
+              fprintf(stderr, "Invalid generations number (-g): %s\n",
+                      strerror(errno));
+              return 1;
+            };
+            if (generationsNew != generations) {
+              fprintf(stderr,
+                      "Multiple conflicting generation arguments passed\n");
+              return 1;
+            }
+            continue;
           }
           if (i + 1 == argc) {
             fprintf(stderr, "No generations number passed (-g)\n");
@@ -75,8 +97,9 @@ int main(int argc, char* argv[]) {
             return 1;
           };
           if (generations < 0) {
-            fprintf(stderr,
-                    "Invalid generations number (must be positive) (-g)\n");
+            fprintf(
+                stderr,
+                "Invalid generations number (must be positive >= 0) (-g)\n");
             return 1;
           }
           genFlag = 1;
@@ -93,7 +116,7 @@ int main(int argc, char* argv[]) {
 
   struct universe v;
 
-  read_in_file(infile, &v);
+  read_in_file(inFile, &v);
   if (errno) {
     return 1;
   };
@@ -104,10 +127,10 @@ int main(int argc, char* argv[]) {
       evolve(&v, will_be_alive);
     }
   }
-  write_out_file(outfile, &v);
+  write_out_file(outFile, &v);
   if (statistics == 1) {
     print_statistics(&v);
   }
-  fclose(outfile);
+  fclose(outFile);
   return 0;
 }

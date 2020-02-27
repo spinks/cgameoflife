@@ -1,6 +1,9 @@
 #include "gol.h"
 
 void read_in_file(FILE *infile, struct universe *u) {
+  // Will read in file from file pointer to universe struct
+  // If error encountered errno will be set
+  // Check this after calling to validate that it was successful
   u->alive_cumulative = 0;
   u->total_cumulative = 0;
 
@@ -99,6 +102,7 @@ void read_in_file(FILE *infile, struct universe *u) {
 }
 
 void write_out_file(FILE *outfile, struct universe *u) {
+  // Writes to outfile buffer
   for (int x = 0; x != u->rows; x++) {
     for (int y = 0; y != u->cols; y++) {
       char c = u->arr[x][y] ? '*' : '.';
@@ -109,24 +113,32 @@ void write_out_file(FILE *outfile, struct universe *u) {
 }
 
 int is_alive(struct universe *u, int column, int row) {
+  // If the column or row index is invalid for the given universe
+  // the function will return -1 and set errno to EINVAL
   if (column < 0 || column >= u->cols) {
     fprintf(stderr, "%s", "Invalid column index\n");
+    errno = EINVAL;
     return -1;
   }
   if (row < 0 || row >= u->rows) {
     fprintf(stderr, "%s", "Invalid row index\n");
+    errno = EINVAL;
     return -1;
   }
   return u->arr[row][column];
 }
 
 int will_be_alive(struct universe *u, int column, int row) {
+  // If the column or row index is invalid for the given universe
+  // the function will return -1 and set errno to EINVAL
   if (column < 0 || column >= u->cols) {
     fprintf(stderr, "%s", "Invalid column index\n");
+    errno = EINVAL;
     return -1;
   }
   if (row < 0 || row >= u->rows) {
     fprintf(stderr, "%s", "Invalid row index\n");
+    errno = EINVAL;
     return -1;
   }
   int neighbors = 0;
@@ -150,12 +162,16 @@ int will_be_alive(struct universe *u, int column, int row) {
 }
 
 int will_be_alive_torus(struct universe *u, int column, int row) {
+  // If the column or row index is invalid for the given universe
+  // the function will return -1 and set errno to EINVAL
   if (column < 0 || column >= u->cols) {
     fprintf(stderr, "%s", "Invalid column index\n");
+    errno = EINVAL;
     return -1;
   }
   if (row < 0 || row >= u->rows) {
     fprintf(stderr, "%s", "Invalid row index\n");
+    errno = EINVAL;
     return -1;
   }
   int neighbors = 0;
@@ -179,6 +195,8 @@ int will_be_alive_torus(struct universe *u, int column, int row) {
 
 void evolve(struct universe *u,
             int (*rule)(struct universe *u, int column, int row)) {
+  // If an error is encountered in calling your rule function
+  // Expected behaviour is that you set errno
   int **new = malloc(u->rows * sizeof(*u->arr));
   for (int i = 0; i < u->rows; i++) {
     new[i] = malloc(u->cols * sizeof(new[0]));
@@ -188,6 +206,10 @@ void evolve(struct universe *u,
   for (int x = 0; x != u->rows; x++) {
     for (int y = 0; y != u->cols; y++) {
       new[x][y] = rule(u, y, x);
+      if (errno) {
+        fprintf(stderr, "At evolve: error encountered in rule call\n");
+        return;
+      };
       alive_round += new[x][y];
       total_round++;
     }

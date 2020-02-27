@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 #include "gol.h"
 
@@ -130,6 +129,10 @@ int main(int argc, char* argv[]) {
     } else {
       evolve(&v, will_be_alive);
     }
+    if (errno) {
+      fprintf(stderr, "Error encountered for evolve calls\n");
+      return 1;
+    };
   }
   write_out_file(outFile, &v);
   if (statistics == 1) {

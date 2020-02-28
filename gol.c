@@ -201,8 +201,8 @@ void evolve(struct universe *u,
   for (int i = 0; i < u->rows; i++) {
     new[i] = malloc(u->cols * sizeof(new[0]));
   }
-  int alive_round = 0;
-  int total_round = 0;
+  long alive_round = 0;
+  long total_round = 0;
   for (int x = 0; x != u->rows; x++) {
     for (int y = 0; y != u->cols; y++) {
       new[x][y] = rule(u, y, x);
@@ -226,8 +226,8 @@ void evolve(struct universe *u,
 }
 
 void print_statistics(struct universe *u) {
-  int alive_round = 0;
-  int total_round = 0;
+  long alive_round = 0;
+  long total_round = 0;
   for (int x = 0; x != u->rows; x++) {
     for (int y = 0; y != u->cols; y++) {
       alive_round += u->arr[x][y];

@@ -41,9 +41,8 @@ int main(int argc, char* argv[]) {
           }
           inFileName = argv[i + 1];
           inFile = fopen(inFileName, "r");
-          if (errno) {
-            fprintf(stderr, "Error reading infile (-i): %s %s\n", inFileName,
-                    strerror(errno));
+          if (inFile == NULL) {
+            fprintf(stderr, "Error reading infile (-i): %s\n", inFileName);
             return 1;
           }
           inFlag = 1;
@@ -65,9 +64,8 @@ int main(int argc, char* argv[]) {
           }
           outFileName = argv[i + 1];
           outFile = fopen(outFileName, "w");
-          if (errno) {
-            fprintf(stderr, "Error opening outfile (-o): %s\n",
-                    strerror(errno));
+          if (outFile == NULL) {
+            fprintf(stderr, "Error opening outfile (-o): %s\n", outFileName);
             return 1;
           };
           outFlag = 1;
@@ -120,9 +118,6 @@ int main(int argc, char* argv[]) {
   struct universe v;
 
   read_in_file(inFile, &v);
-  if (errno) {
-    return 1;
-  };
   fclose(inFile);
   for (int i = 0; i != generations; i++) {
     if (torus == 1) {
@@ -130,10 +125,6 @@ int main(int argc, char* argv[]) {
     } else {
       evolve(&v, will_be_alive);
     }
-    if (errno) {
-      fprintf(stderr, "Error encountered for evolve calls\n");
-      return 1;
-    };
   }
   write_out_file(outFile, &v);
   if (statistics == 1) {

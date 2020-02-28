@@ -1,9 +1,6 @@
 #include "gol.h"
 
 void read_in_file(FILE *infile, struct universe *u) {
-  // Will read in file from file pointer to universe struct
-  // If error encountered errno will be set
-  // Check this after calling to validate that it was successful
   u->alive_cumulative = 0;
   u->total_cumulative = 0;
 
@@ -11,8 +8,7 @@ void read_in_file(FILE *infile, struct universe *u) {
   u->arr[0] = malloc(sizeof(u->arr[0][0]));
   if (u->arr == NULL || u->arr[0] == NULL) {
     fprintf(stderr, "Unable to allocate memory.\n");
-    errno = ENOMEM;
-    return;
+    exit(1);
   }
 
   int first_line_length = 0;
@@ -30,15 +26,13 @@ void read_in_file(FILE *infile, struct universe *u) {
 
       if (new_arr == NULL) {
         fprintf(stderr, "Unable to allocate memory.\n");
-        errno = ENOMEM;
-        return;
+        exit(1);
       }
       for (int i = row; i != new_row; i++) {
         new_arr[i] = malloc(sizeof(u->arr[0][0]));
         if (new_arr[i] == NULL) {
           fprintf(stderr, "Unable to allocate memory.\n");
-          errno = ENOMEM;
-          return;
+          exit(1);
         }
       }
       max_row = new_row;
@@ -49,8 +43,7 @@ void read_in_file(FILE *infile, struct universe *u) {
       int *new_line = realloc(u->arr[row], new_col * sizeof(*u->arr[row]));
       if (new_line == NULL) {
         fprintf(stderr, "Unable to allocate memory.\n");
-        errno = ENOMEM;
-        return;
+        exit(1);
       }
       max_col = new_col;
       u->arr[row] = new_line;
@@ -59,9 +52,8 @@ void read_in_file(FILE *infile, struct universe *u) {
       if (first_line_finished == 0) first_line_length++;
       if (first_line_length > 512) {
         fprintf(stderr, "Line length is over permited 512 columns.\n");
-        errno = EINVAL;
         fclose(infile);
-        return;
+        exit(1);
       }
       u->arr[row][col] = (ch == '.') ? 0 : 1;
       col++;
@@ -69,24 +61,21 @@ void read_in_file(FILE *infile, struct universe *u) {
       if (first_line_finished == 0) first_line_finished = 1;
       if (first_line_length == 0) {
         fprintf(stderr, "Input file is empty\n");
-        errno = EINVAL;
         fclose(infile);
-        return;
+        exit(1);
       }
       if (col != first_line_length) {
         fprintf(stderr, "Line lengths not consistent.\n");
-        errno = EINVAL;
         fclose(infile);
-        return;
+        exit(1);
       }
       col = 0;
       max_col = 0;
       row++;
     } else {
       fprintf(stderr, "Invalid characters found in input: %c\n", ch);
-      errno = EINVAL;
       fclose(infile);
-      return;
+      exit(1);
     }
   }
   u->rows = row;
@@ -112,33 +101,25 @@ void write_out_file(FILE *outfile, struct universe *u) {
 }
 
 int is_alive(struct universe *u, int column, int row) {
-  // If the column or row index is invalid for the given universe
-  // the function will return -1 and set errno to EINVAL
   if (column < 0 || column >= u->cols) {
     fprintf(stderr, "%s", "Invalid column index\n");
-    errno = EINVAL;
-    return -1;
+    exit(1);
   }
   if (row < 0 || row >= u->rows) {
     fprintf(stderr, "%s", "Invalid row index\n");
-    errno = EINVAL;
-    return -1;
+    exit(1);
   }
   return u->arr[row][column];
 }
 
 int will_be_alive(struct universe *u, int column, int row) {
-  // If the column or row index is invalid for the given universe
-  // the function will return -1 and set errno to EINVAL
   if (column < 0 || column >= u->cols) {
     fprintf(stderr, "%s", "Invalid column index\n");
-    errno = EINVAL;
-    return -1;
+    exit(1);
   }
   if (row < 0 || row >= u->rows) {
     fprintf(stderr, "%s", "Invalid row index\n");
-    errno = EINVAL;
-    return -1;
+    exit(1);
   }
   int neighbors = 0;
   for (int x_off = -1; x_off != 2; x_off++) {
@@ -161,17 +142,13 @@ int will_be_alive(struct universe *u, int column, int row) {
 }
 
 int will_be_alive_torus(struct universe *u, int column, int row) {
-  // If the column or row index is invalid for the given universe
-  // the function will return -1 and set errno to EINVAL
   if (column < 0 || column >= u->cols) {
     fprintf(stderr, "%s", "Invalid column index\n");
-    errno = EINVAL;
-    return -1;
+    exit(1);
   }
   if (row < 0 || row >= u->rows) {
     fprintf(stderr, "%s", "Invalid row index\n");
-    errno = EINVAL;
-    return -1;
+    exit(1);
   }
   int neighbors = 0;
   for (int x_off = -1; x_off != 2; x_off++) {
@@ -194,18 +171,12 @@ int will_be_alive_torus(struct universe *u, int column, int row) {
 
 void evolve(struct universe *u,
             int (*rule)(struct universe *u, int column, int row)) {
-  // If an error is encountered in calling your rule function
-  // Expected behaviour is that you set errno
   int new[u->rows][u->cols];
   long alive_round = 0;
   long total_round = 0;
   for (int x = 0; x != u->rows; x++) {
     for (int y = 0; y != u->cols; y++) {
       new[x][y] = rule(u, y, x);
-      if (errno) {
-        fprintf(stderr, "At evolve: error encountered in rule call\n");
-        return;
-      };
       alive_round += new[x][y];
       total_round++;
     }

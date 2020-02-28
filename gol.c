@@ -197,10 +197,7 @@ void evolve(struct universe *u,
             int (*rule)(struct universe *u, int column, int row)) {
   // If an error is encountered in calling your rule function
   // Expected behaviour is that you set errno
-  int **new = malloc(u->rows * sizeof(*u->arr));
-  for (int i = 0; i < u->rows; i++) {
-    new[i] = malloc(u->cols * sizeof(new[0]));
-  }
+  int new[u->rows][u->cols];
   long alive_round = 0;
   long total_round = 0;
   for (int x = 0; x != u->rows; x++) {
@@ -220,9 +217,7 @@ void evolve(struct universe *u,
     for (int y = 0; y != u->cols; y++) {
       u->arr[x][y] = new[x][y];
     }
-    free(new[x]);
   }
-  free(new);
 }
 
 void print_statistics(struct universe *u) {

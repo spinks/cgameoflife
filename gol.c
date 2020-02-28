@@ -98,7 +98,6 @@ void read_in_file(FILE *infile, struct universe *u) {
       u->total_cumulative++;
     }
   }
-  fclose(infile);
 }
 
 void write_out_file(FILE *outfile, struct universe *u) {

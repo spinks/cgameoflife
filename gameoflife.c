@@ -123,6 +123,7 @@ int main(int argc, char* argv[]) {
   if (errno) {
     return 1;
   };
+  fclose(inFile);
   for (int i = 0; i != generations; i++) {
     if (torus == 1) {
       evolve(&v, will_be_alive_torus);

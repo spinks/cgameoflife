@@ -78,6 +78,11 @@ void read_in_file(FILE *infile, struct universe *u) {
       exit(1);
     }
   }
+  if (ch != '\n') {
+    fprintf(stderr, "File did not end with newline\n");
+    fclose(infile);
+    exit(1);
+  }
   u->rows = row;
   u->cols = first_line_length;
 
